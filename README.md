@@ -18,7 +18,7 @@ A beautiful web application that helps users track their dreams and gain AI-powe
 - **Backend**: Next.js API Routes
 - **Database**: Supabase (PostgreSQL)
 - **Authentication**: Supabase Auth
-- **AI**: Google Gemini AI
+- **AI**: Google Gemini AI (gemini-2.5-flash-lite model)
 - **Payments**: Stripe
 - **Deployment**: Vercel
 
@@ -145,7 +145,12 @@ CREATE TABLE dreams (
 CREATE TABLE ai_insights (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     dream_id UUID REFERENCES dreams(id) ON DELETE CASCADE UNIQUE NOT NULL,
+    user_id UUID REFERENCES users(id) ON DELETE CASCADE NOT NULL,
     insight_text TEXT NOT NULL,
+    themes TEXT[],
+    emotions TEXT[],
+    connections TEXT[],
+    summary TEXT,
     gemini_api_request_payload JSONB,
     gemini_api_response_raw JSONB,
     generated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL

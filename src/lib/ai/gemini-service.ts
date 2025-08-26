@@ -4,7 +4,8 @@ import { AiInsightRequest, AiInsightResponse } from '@/lib/types/ai-insight';
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 
 export async function generateDreamInsight(request: AiInsightRequest): Promise<AiInsightResponse> {
-  const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+  // Using gemini-2.5-flash-lite for faster, more efficient dream analysis
+  const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' });
 
   const prompt = createDreamAnalysisPrompt(request);
 
@@ -17,6 +18,12 @@ export async function generateDreamInsight(request: AiInsightRequest): Promise<A
     return parseAiResponse(text);
   } catch (error) {
     console.error('Error generating AI insight:', error);
+    
+    // Check if it's a model-specific error
+    if (error instanceof Error && error.message.includes('model')) {
+      throw new Error('AI model configuration error. Please check your API key and model settings.');
+    }
+    
     throw new Error('Failed to generate dream insight');
   }
 }

@@ -1,7 +1,10 @@
-import { createServerComponentClient } from '@/lib/db/supabase';
-import { redirect, notFound } from 'next/navigation';
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { createClientComponentClient } from '@/lib/db/supabase';
 import Link from 'next/link';
-import { ArrowLeft, Sparkles, Calendar, Star } from 'lucide-react';
+import { ArrowLeft, Sparkles, Calendar, Star, Trash2, AlertTriangle } from 'lucide-react';
 
 interface DreamDetailPageProps {
   params: Promise<{
@@ -9,34 +12,129 @@ interface DreamDetailPageProps {
   }>;
 }
 
-export default async function DreamDetailPage({ params }: DreamDetailPageProps) {
-  const { dreamId } = await params;
-  const supabase = await createServerComponentClient();
-  
-  // Check if user is authenticated
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
-  
-  if (authError || !user) {
-    redirect('/');
+interface Dream {
+  id: string;
+  title: string | null;
+  dream_text: string;
+  mood: string | null;
+  tags: string[] | null;
+  sleep_quality: number | null;
+  dream_date: string;
+  has_ai_insight: boolean;
+  ai_insights?: {
+    id: string;
+    insight_text: string;
+    generated_at: string;
+  } | null;
+}
+
+export default function DreamDetailPage({ params }: DreamDetailPageProps) {
+  const [dreamId, setDreamId] = useState<string>('');
+  const [dream, setDream] = useState<Dream | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const router = useRouter();
+  const supabase = createClientComponentClient();
+
+  // Load dream data
+  useEffect(() => {
+    const loadDream = async () => {
+      try {
+        const { dreamId: id } = await params;
+        setDreamId(id);
+
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          router.push('/');
+          return;
+        }
+
+        const { data: dreamData, error: dreamError } = await supabase
+          .from('dreams')
+          .select(`
+            *,
+            ai_insights (
+              id,
+              insight_text,
+              generated_at
+            )
+          `)
+          .eq('id', id)
+          .eq('user_id', user.id)
+          .single();
+
+        if (dreamError || !dreamData) {
+          setError('Dream not found');
+          return;
+        }
+
+        setDream(dreamData);
+      } catch (error) {
+        console.error('Error loading dream:', error);
+        setError('Failed to load dream');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadDream();
+  }, [params, router, supabase.auth]);
+
+  const handleDelete = async () => {
+    setIsDeleting(true);
+    try {
+      const response = await fetch(`/api/dreams/${dreamId}`, {
+        method: 'DELETE',
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to delete dream');
+      }
+
+      // Success! Redirect to dashboard
+      router.push('/dashboard');
+    } catch (error: any) {
+      console.error('Error deleting dream:', error);
+      setError(error.message || 'Error deleting dream. Please try again.');
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteModal(false);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-lavender-mist via-misty-blue to-soft-pink flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-r from-shimmering-gold to-soft-mint rounded-full flex items-center justify-center animate-spin">
+            <Sparkles className="w-8 h-8 text-white" />
+          </div>
+          <p className="text-gray-600">Loading dream...</p>
+        </div>
+      </div>
+    );
   }
 
-  // Fetch the specific dream
-  const { data: dream, error: dreamError } = await supabase
-    .from('dreams')
-    .select(`
-      *,
-      ai_insights (
-        id,
-        insight_text,
-        generated_at
-      )
-    `)
-    .eq('id', dreamId)
-    .eq('user_id', user.id)
-    .single();
-
-  if (dreamError || !dream) {
-    notFound();
+  if (error || !dream) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-lavender-mist via-misty-blue to-soft-pink flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center">
+            <Sparkles className="w-8 h-8 text-red-500" />
+          </div>
+          <h2 className="text-xl font-semibold text-gray-800 mb-2">Error</h2>
+          <p className="text-gray-600 mb-4">{error || 'Dream not found'}</p>
+          <Link href="/dashboard" className="dreamy-button">
+            Back to Dashboard
+          </Link>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -136,7 +234,33 @@ export default async function DreamDetailPage({ params }: DreamDetailPageProps) 
                 <p className="text-gray-600 mb-6">
                   Get an AI-powered analysis of your dream to discover hidden meanings and patterns.
                 </p>
-                <button className="dreamy-button">
+                <button 
+                  onClick={async () => {
+                    try {
+                      const response = await fetch('/api/ai-insight', {
+                        method: 'POST',
+                        headers: {
+                          'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ dreamId }),
+                      });
+
+                      const result = await response.json();
+
+                      if (!response.ok) {
+                        alert(result.error || 'Failed to generate AI insight');
+                        return;
+                      }
+
+                      // Refresh the page to show the new insight
+                      window.location.reload();
+                    } catch (error) {
+                      console.error('Error generating AI insight:', error);
+                      alert('Error generating AI insight. Please try again.');
+                    }
+                  }}
+                  className="dreamy-button"
+                >
                   Generate AI Insight
                 </button>
               </div>
@@ -157,9 +281,59 @@ export default async function DreamDetailPage({ params }: DreamDetailPageProps) 
             >
               Edit Dream
             </Link>
+            <button
+              onClick={() => setShowDeleteModal(true)}
+              className="px-6 py-3 border border-red-300 rounded-full text-red-600 hover:bg-red-50 transition-colors flex items-center gap-2"
+            >
+              <Trash2 className="w-4 h-4" />
+              Delete Dream
+            </button>
           </div>
         </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md mx-4">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+                <AlertTriangle className="w-5 h-5 text-red-500" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-800">Delete Dream</h3>
+            </div>
+            <p className="text-gray-600 mb-6">
+              Are you sure you want to delete this dream? This action cannot be undone and will also remove any associated AI insights.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+                disabled={isDeleting}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDelete}
+                className="flex-1 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                disabled={isDeleting}
+              >
+                {isDeleting ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    Deleting...
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="w-4 h-4" />
+                    Delete
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
