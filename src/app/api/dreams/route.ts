@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerComponentClient } from '@/lib/db/supabase';
+import { createServerComponentClient, createAdminClient } from '@/lib/db/supabase';
 
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createServerComponentClient();
+    const adminSupabase = createAdminClient();
     
     // Get the current user
     const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -19,7 +20,31 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Dream text is required' }, { status: 400 });
     }
 
-    // Create the dream record
+    // First, ensure the user exists in our users table using admin client
+    const { data: existingUser, error: userCheckError } = await adminSupabase
+      .from('users')
+      .select('*')
+      .eq('id', user.id)
+      .single();
+
+    if (!existingUser) {
+      // Create user record in our users table using admin client
+      const { error: userCreateError } = await adminSupabase
+        .from('users')
+        .insert({
+          id: user.id,
+          email: user.email,
+          auth_provider: user.app_metadata?.provider || 'email',
+          provider_id: user.user_metadata?.sub || null,
+        });
+
+      if (userCreateError) {
+        console.error('Error creating user record:', userCreateError);
+        return NextResponse.json({ error: 'Failed to create user record' }, { status: 500 });
+      }
+    }
+
+    // Create the dream record using regular client (user can create their own dreams)
     const { data: dream, error: dreamError } = await supabase
       .from('dreams')
       .insert({
@@ -40,15 +65,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to create dream' }, { status: 500 });
     }
 
-    // Create a free subscription for the user if they don't have one
-    const { data: existingSubscription } = await supabase
+    // Create a free subscription for the user if they don't have one using admin client
+    const { data: existingSubscription } = await adminSupabase
       .from('user_subscriptions')
       .select('*')
       .eq('user_id', user.id)
       .single();
 
     if (!existingSubscription) {
-      const { error: subscriptionError } = await supabase
+      const { error: subscriptionError } = await adminSupabase
         .from('user_subscriptions')
         .insert({
           user_id: user.id,
