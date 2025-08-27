@@ -59,13 +59,22 @@ export default function Header() {
           ? 'bg-white/70 backdrop-blur-md shadow-lg' 
           : 'bg-white/90'
       }`}>
-        <div className="container mx-auto px-4 py-4">
+        <div className="container mx-auto px-4 py-1">
           <div className="flex justify-between items-center">
             <Link 
               href="/" 
-              className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-shimmering-gold to-yellow-500 hover:scale-105 transition-transform"
+              className="flex items-center gap-2 hover:scale-105 transition-transform"
             >
-              Track ur Dreams
+              <img 
+                src="/img/MainLogo.png" 
+                alt="Track ur Dreams Main Logo" 
+                className="h-16 w-auto"
+              />
+              <img 
+                src="/img/SecLogo.png" 
+                alt="Track ur Dreams Secondary Logo" 
+                className="h-16 w-auto"
+              />
             </Link>
             
             <div className="flex items-center gap-4">
