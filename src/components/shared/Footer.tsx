@@ -16,12 +16,12 @@ export default function Footer() {
               <img 
                 src="/img/MainLogo.png" 
                 alt="Track ur Dreams Main Logo" 
-                className="h-16 w-auto"
+                className="h-10 md:h-16 w-auto"
               />
               <img 
                 src="/img/SecLogo2.png" 
                 alt="Track ur Dreams Secondary Logo" 
-                className="h-12 w-auto"
+                className="h-7 md:h-12 w-auto"
               />
             </Link>
             <p className="mt-4 text-gray-600 dark:text-gray-400">
