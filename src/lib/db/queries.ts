@@ -100,7 +100,14 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
         id,
         name,
         max_ai_insights
-      )
+      ),
+      stripe_customer_id,
+      current_period_start,
+      current_period_end,
+      cancel_at,
+      cancel_at_period_end,
+      created_at,
+      last_payment_date
     `)
     .eq('user_id', userId)
     .single();
@@ -135,6 +142,13 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
     product: subData.product_id,
     insightCount: insightCount || 0,
     maxInsights: subData.product_id === 'premium' ? -1 : FREE_INSIGHT_LIMIT, // -1 indicates unlimited
+    subscriptionDetails: subData.product_id === 'premium' ? {
+      currentPeriodStart: subData.created_at || new Date().toISOString(),
+      currentPeriodEnd: subData.current_period_end || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days from now
+      cancelAtPeriodEnd: false,
+      stripeCustomerId: subData.stripe_id || 'N/A',
+      nextPaymentDate: subData.current_period_end || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+    } : undefined
   };
 }
 

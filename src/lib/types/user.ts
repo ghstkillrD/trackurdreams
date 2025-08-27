@@ -14,4 +14,13 @@ export interface UserProfile {
   product: string;
   insightCount: number;
   maxInsights: number;
+  subscriptionDetails?: {
+    currentPeriodStart?: string;
+    currentPeriodEnd?: string;
+    cancelAtPeriodEnd?: boolean;
+    cancelAt?: string;
+    stripeCustomerId?: string;
+    lastPaymentDate?: string;
+    nextPaymentDate?: string;
+  };
 } 
