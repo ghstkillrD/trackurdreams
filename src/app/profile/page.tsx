@@ -42,7 +42,7 @@ export default function ProfilePage() {
           <div>
             <label className="block text-sm font-medium text-gray-600 dark:text-gray-400">AI Insights Usage</label>
             <p className="mt-1 text-gray-900 dark:text-gray-100">
-              {profile.insightCount} / {profile.maxInsights} used this period
+              {profile.insightCount} {profile.product === 'premium' ? 'insights generated' : `/ ${profile.maxInsights} used this period`}
             </p>
           </div>
         </div>

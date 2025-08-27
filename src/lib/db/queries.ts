@@ -91,7 +91,8 @@ export async function getUserById(userId: string): Promise<User | null> {
 }
 
 export async function getUserProfile(userId: string): Promise<UserProfile | null> {
-  const { data, error } = await supabase
+  // First get the subscription data
+  const { data: subData, error: subError } = await supabase
     .from('user_subscriptions')
     .select(`
       *,
@@ -104,16 +105,25 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
     .eq('user_id', userId)
     .single();
 
-  if (error) throw error;
+  if (subError) throw subError;
 
-  if (!data) {
-    // Return default free profile
+  // Get the count of dreams with AI insights for this user
+  const { count: insightCount, error: countError } = await supabase
+    .from('dreams')
+    .select('*', { count: 'exact', head: true })
+    .eq('user_id', userId)
+    .eq('has_ai_insight', true);
+
+  if (countError) throw countError;
+
+  if (!subData) {
+    // Return default free profile with actual insight count
     return {
       id: userId,
       email: '', // Will be filled from auth
       subscriptionStatus: 'free',
       product: 'free',
-      insightCount: 0,
+      insightCount: insightCount || 0,
       maxInsights: FREE_INSIGHT_LIMIT,
     };
   }
@@ -121,10 +131,10 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
   return {
     id: userId,
     email: '', // Will be filled from auth
-    subscriptionStatus: data.status,
-    product: data.product_id,
-    insightCount: data.insights_used_this_period || 0,
-    maxInsights: data.products?.max_ai_insights || FREE_INSIGHT_LIMIT,
+    subscriptionStatus: subData.status,
+    product: subData.product_id,
+    insightCount: insightCount || 0,
+    maxInsights: subData.product_id === 'premium' ? -1 : FREE_INSIGHT_LIMIT, // -1 indicates unlimited
   };
 }
 
