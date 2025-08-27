@@ -52,6 +52,12 @@ export default function Header() {
             </Link>
             
             <div className="flex items-center gap-4">
+              <Link
+                href="/plans"
+                className="text-gray-600 hover:text-gray-800 transition-colors"
+              >
+                Plans
+              </Link>
               {isAuthenticated ? (
                 <>
                   <Link
