@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Inter, Montserrat } from 'next/font/google';
+import Header from '@/components/shared/Header';
 import '@/styles/globals.css';
 
 const inter = Inter({ 
@@ -51,6 +52,7 @@ export default function RootLayout({
         
         {/* Main content */}
         <div className="min-h-screen bg-gradient-to-br from-lavender-mist via-misty-blue to-soft-pink">
+          <Header />
           {children}
         </div>
       </body>
