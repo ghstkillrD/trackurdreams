@@ -95,19 +95,20 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
   const { data: subData, error: subError } = await supabase
     .from('user_subscriptions')
     .select(`
-      *,
+      status,
+      product_id,
+      stripe_customer_id,
+      stripe_subscription_id,
+      current_period_start,
+      current_period_end,
+      cancel_at_period_end,
+      insights_used_this_period,
+      created_at,
       products:product_id (
         id,
         name,
         max_ai_insights
-      ),
-      stripe_customer_id,
-      current_period_start,
-      current_period_end,
-      cancel_at,
-      cancel_at_period_end,
-      created_at,
-      last_payment_date
+      )
     `)
     .eq('user_id', userId)
     .single();
@@ -146,7 +147,7 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
       currentPeriodStart: subData.created_at || new Date().toISOString(),
       currentPeriodEnd: subData.current_period_end || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days from now
       cancelAtPeriodEnd: false,
-      stripeCustomerId: subData.stripe_id || 'N/A',
+      stripeCustomerId: subData.stripe_customer_id || 'N/A',
       nextPaymentDate: subData.current_period_end || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
     } : undefined
   };
