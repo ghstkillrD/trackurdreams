@@ -3,23 +3,12 @@ import { createServerComponentClient } from '@/lib/db/supabase';
 import { getUserProfile } from '@/lib/db/queries';
 import { UserProfile } from '@/lib/types/user';
 
-async function getProfile() {
-  const supabase = await createServerComponentClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  
-  if (!user) {
-    return null;
-  }
+'use client';
 
-  const profile = await getUserProfile(user.id);
-  return {
-    ...profile,
-    email: user.email,
-  };
-}
+import { useSubscription } from '@/providers/SubscriptionProvider';
 
-export default async function ProfilePage() {
-  const profile = await getProfile();
+export default function ProfilePage() {
+  const { userProfile: profile, loading } = useSubscription();
 
   if (!profile) {
     return (

@@ -10,7 +10,8 @@ export interface User {
 export interface UserProfile {
   id: string;
   email: string;
-  subscriptionStatus: 'free' | 'premium';
+  subscriptionStatus: string;
+  product: string;
   insightCount: number;
   maxInsights: number;
 } 

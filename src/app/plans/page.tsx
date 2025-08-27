@@ -3,12 +3,14 @@
 import { useState } from 'react';
 import { createClientComponentClient } from '@/lib/db/supabase';
 import { Sparkles, Check } from 'lucide-react';
+import { useSubscription } from '@/providers/SubscriptionProvider';
 import { AuthModal } from '@/components/shared/AuthModal';
 import { FREE_INSIGHT_LIMIT, SUBSCRIPTION_PRICE_USD } from '@/lib/constants/app-constants';
 
 export default function PlansPage() {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const { userProfile, refreshProfile } = useSubscription();
   const supabase = createClientComponentClient();
 
   const handleSubscribe = async () => {
@@ -64,12 +66,51 @@ export default function PlansPage() {
               <span>Basic dream analytics</span>
             </li>
           </ul>
-          <button
-            disabled
-            className="w-full px-6 py-3 bg-gray-100 text-gray-600 rounded-lg cursor-not-allowed"
-          >
-            Current Plan
-          </button>
+          {userProfile?.product === 'premium' && userProfile?.subscriptionStatus === 'active' ? (
+            <button
+              onClick={async () => {
+                if (window.confirm('Are you sure you want to downgrade to the free tier? You will lose access to unlimited AI insights and other premium features.')) {
+                  setIsLoading(true);
+                  try {
+                    const response = await fetch('/api/stripe/downgrade', {
+                      method: 'POST',
+                      headers: {
+                        'Content-Type': 'application/json',
+                      },
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                      await refreshProfile();
+                      alert('Successfully downgraded to free tier');
+                    } else {
+                      throw new Error(result.error || 'Failed to downgrade');
+                    }
+                  } catch (error) {
+                    console.error('Error downgrading subscription:', error);
+                    alert('Failed to downgrade subscription. Please try again.');
+                  } finally {
+                    setIsLoading(false);
+                  }
+                }
+              }}
+              className="w-full px-6 py-3 bg-red-100 text-red-700 hover:bg-red-200 rounded-lg transition-colors flex items-center justify-center gap-2"
+            >
+              Downgrade to Free
+            </button>
+          ) : (
+            <button
+              disabled
+              className={`w-full px-6 py-3 ${
+                userProfile?.product === 'free' 
+                  ? 'bg-gray-100 text-gray-600' 
+                  : 'bg-gray-50 text-gray-400'
+              } rounded-lg cursor-not-allowed`}
+            >
+              {userProfile?.product === 'free' ? 'Current Plan' : 'Basic Plan'}
+            </button>
+          )}
         </div>
 
         {/* Premium Plan */}
@@ -97,30 +138,43 @@ export default function PlansPage() {
               <span>Advanced dream analytics</span>
             </li>
           </ul>
-          <button
-            onClick={handleSubscribe}
-            disabled={isLoading}
-            className="w-full px-6 py-3 bg-shimmering-gold text-white rounded-lg hover:bg-shimmering-gold/90 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
-          >
-            {isLoading ? (
-              <>
-                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                Processing...
-              </>
-            ) : (
-              <>
-                <Sparkles className="w-5 h-5" />
-                Subscribe Now
-              </>
-            )}
-          </button>
+          {userProfile?.product === 'premium' && userProfile?.subscriptionStatus === 'active' ? (
+            <button
+              disabled
+              className="w-full px-6 py-3 bg-green-100 text-green-700 rounded-lg cursor-not-allowed flex items-center justify-center gap-2"
+            >
+              <Check className="w-5 h-5" />
+              Current Plan
+            </button>
+          ) : (
+            <button
+              onClick={handleSubscribe}
+              disabled={isLoading}
+              className="w-full px-6 py-3 bg-shimmering-gold text-white rounded-lg hover:bg-shimmering-gold/90 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+            >
+              {isLoading ? (
+                <>
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  Processing...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-5 h-5" />
+                  {userProfile?.subscriptionStatus === 'canceled' ? 'Resubscribe Now' : 'Subscribe Now'}
+                </>
+              )}
+            </button>
+          )}
         </div>
       </div>
 
       <AuthModal
         isOpen={showAuthModal}
         onClose={() => setShowAuthModal(false)}
-        onSuccess={() => handleSubscribe()}
+        onSuccess={async () => {
+          await refreshProfile();
+          handleSubscribe();
+        }}
         mode="signup"
       />
     </div>

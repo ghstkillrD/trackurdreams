@@ -56,11 +56,14 @@ export async function POST(request: NextRequest) {
       .eq('user_id', user.id);
 
     // Check if user has reached their limit
-    if (subscription.product_id === 'free' && insightCount && insightCount >= FREE_INSIGHT_LIMIT) {
-      return NextResponse.json({ 
-        error: `You've reached your free limit of ${FREE_INSIGHT_LIMIT} AI insights. Please upgrade to generate more insights.` 
-      }, { status: 403 });
+    if (subscription.product_id === 'free' || subscription.status !== 'active') {
+      if (insightCount && insightCount >= FREE_INSIGHT_LIMIT) {
+        return NextResponse.json({ 
+          error: `You've reached your free limit of ${FREE_INSIGHT_LIMIT} AI insights. Please upgrade to generate more insights.` 
+        }, { status: 403 });
+      }
     }
+    // Premium users with active subscription have unlimited insights
 
     // Generate AI insight
     const aiRequest = {
@@ -91,6 +94,18 @@ export async function POST(request: NextRequest) {
     if (saveError) {
       console.error('Error saving AI insight:', saveError);
       return NextResponse.json({ error: 'Failed to save AI insight' }, { status: 500 });
+    }
+
+    // Increment insights counter for non-premium users
+    if (subscription.product_id === 'free' || subscription.status !== 'active') {
+      const { error: countError } = await supabase
+        .from('user_subscriptions')
+        .update({ insights_used_this_period: (insightCount || 0) + 1 })
+        .eq('user_id', user.id);
+
+      if (countError) {
+        console.error('Error updating insights count:', countError);
+      }
     }
 
     // Update the dream to mark it as having an AI insight

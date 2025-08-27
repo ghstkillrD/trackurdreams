@@ -95,7 +95,8 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
     .from('user_subscriptions')
     .select(`
       *,
-      products (
+      products:product_id (
+        id,
         name,
         max_ai_insights
       )
@@ -119,8 +120,9 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
   return {
     id: userId,
     email: '', // Will be filled from auth
-    subscriptionStatus: data.status === 'active' ? 'premium' : 'free',
-    insightCount: data.insights_used_this_period,
+    subscriptionStatus: data.status,
+    product: data.product_id,
+    insightCount: data.insights_used_this_period || 0,
     maxInsights: data.products?.max_ai_insights || FREE_INSIGHT_LIMIT,
   };
 }
