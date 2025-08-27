@@ -65,6 +65,9 @@ export default function PlansPage() {
               <Check className="w-5 h-5 text-green-500" />
               <span>Basic dream analytics</span>
             </li>
+            <li className="opacity-0 select-none">
+              <span>Advanced dream analytics</span>
+            </li>
           </ul>
           {userProfile?.product === 'premium' && userProfile?.subscriptionStatus === 'active' ? (
             <button
