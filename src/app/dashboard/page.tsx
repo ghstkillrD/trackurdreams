@@ -79,7 +79,7 @@ export default async function DashboardPage() {
 
                 {dream.tags && dream.tags.length > 0 && (
                   <div className="flex flex-wrap gap-1 mb-4">
-                    {dream.tags.map((tag) => (
+                    {dream.tags.map((tag: string) => (
                       <span
                         key={tag}
                         className="px-2 py-1 bg-lavender-mist/50 text-gray-700 text-xs rounded-full"

@@ -1,15 +1,20 @@
 export interface Dream {
   id: string;
-  userId: string;
-  dreamDate: string;
+  user_id: string;
+  dream_date: string;
   title?: string;
-  dreamText: string;
+  dream_text: string;
   mood?: string;
   tags?: string[];
-  sleepQuality?: number;
-  hasAiInsight: boolean;
-  createdAt: string;
-  updatedAt: string;
+  sleep_quality?: number;
+  has_ai_insight: boolean;
+  created_at: string;
+  updated_at: string;
+  ai_insights?: {
+    id: string;
+    insight_text: string;
+    generated_at: string;
+  } | null;
 }
 
 export interface CreateDreamRequest {
