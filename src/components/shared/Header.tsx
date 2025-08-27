@@ -59,7 +59,7 @@ export default function Header() {
           ? 'bg-white/70 backdrop-blur-md shadow-lg' 
           : 'bg-white/90'
       }`}>
-        <div className="container mx-auto px-4 py-1">
+        <div className="container mx-auto px-4 py-4">
           <div className="flex justify-between items-center">
             <Link 
               href="/" 
@@ -68,12 +68,12 @@ export default function Header() {
               <img 
                 src="/img/MainLogo.png" 
                 alt="Track ur Dreams Main Logo" 
-                className="h-16 w-auto"
+                className="h-10 w-auto"
               />
               <img 
                 src="/img/SecLogo.png" 
                 alt="Track ur Dreams Secondary Logo" 
-                className="h-16 w-auto"
+                className="h-10 w-auto"
               />
             </Link>
             
