@@ -15,6 +15,7 @@ export default function Header() {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin');
   const [scrolled, setScrolled] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -77,7 +78,8 @@ export default function Header() {
               />
             </Link>
             
-            <div className="flex items-center gap-4">
+            {/* Desktop Navigation */}
+            <div className="hidden md:flex items-center gap-4">
               <Link
                 href="/plans"
                 className={`font-medium hover:text-shimmering-gold transition-colors ${
@@ -141,6 +143,146 @@ export default function Header() {
                   </button>
                 </>
               )}
+            </div>
+
+            {/* Mobile Menu Button */}
+            <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
+              aria-label="Toggle mobile menu"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-6 w-6 text-gray-600"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                {isMobileMenuOpen ? (
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                ) : (
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 6h16M4 12h16M4 18h16"
+                  />
+                )}
+              </svg>
+            </button>
+          </div>
+
+          {/* Mobile Menu Overlay */}
+          <div
+            className={`md:hidden fixed inset-0 z-50 bg-gray-800/50 backdrop-blur-sm transition-opacity duration-300 ${
+              isMobileMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+            }`}
+            onClick={() => setIsMobileMenuOpen(false)}
+          >
+            <div
+              className={`absolute right-0 top-0 h-screen w-64 bg-white shadow-lg transform transition-transform duration-300 ${
+                isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
+              }`}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="p-5 space-y-4">
+                <div className="flex justify-end">
+                  <button
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-6 w-6 text-gray-600"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M6 18L18 6M6 6l12 12"
+                      />
+                    </svg>
+                  </button>
+                </div>
+
+                <nav className="space-y-3">
+                  <Link
+                    href="/plans"
+                    className={`block px-4 py-2 rounded-lg transition-colors ${
+                      pathname === '/plans'
+                        ? 'bg-shimmering-gold/10 text-shimmering-gold'
+                        : 'text-gray-600 hover:bg-gray-50'
+                    }`}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Plans
+                  </Link>
+                  {isAuthenticated ? (
+                    <>
+                      <Link
+                        href="/dashboard"
+                        className={`block px-4 py-2 rounded-lg transition-colors ${
+                          pathname === '/dashboard'
+                            ? 'bg-shimmering-gold/10 text-shimmering-gold'
+                            : 'text-gray-600 hover:bg-gray-50'
+                        }`}
+                        onClick={() => setIsMobileMenuOpen(false)}
+                      >
+                        Dashboard
+                      </Link>
+                      <Link
+                        href="/profile"
+                        className={`block px-4 py-2 rounded-lg transition-colors ${
+                          pathname === '/profile'
+                            ? 'bg-shimmering-gold/10 text-shimmering-gold'
+                            : 'text-gray-600 hover:bg-gray-50'
+                        }`}
+                        onClick={() => setIsMobileMenuOpen(false)}
+                      >
+                        Profile
+                      </Link>
+                      <button
+                        onClick={() => {
+                          handleSignOut();
+                          setIsMobileMenuOpen(false);
+                        }}
+                        className="w-full px-4 py-2 text-left text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      >
+                        Sign Out
+                      </button>
+                    </>
+                  ) : (
+                    <div className="space-y-2">
+                      <button
+                        onClick={() => {
+                          openAuthModal('signin');
+                          setIsMobileMenuOpen(false);
+                        }}
+                        className="w-full px-4 py-2 text-left text-gray-600 hover:bg-gray-50 rounded-lg transition-colors"
+                      >
+                        Sign In
+                      </button>
+                      <button
+                        onClick={() => {
+                          openAuthModal('signup');
+                          setIsMobileMenuOpen(false);
+                        }}
+                        className="w-full px-4 py-2 bg-gradient-to-r from-shimmering-gold to-yellow-500 text-white rounded-lg font-medium shadow-md"
+                      >
+                        Sign Up
+                      </button>
+                    </div>
+                  )}
+                </nav>
+              </div>
             </div>
           </div>
         </div>
