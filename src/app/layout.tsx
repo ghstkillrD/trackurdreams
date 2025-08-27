@@ -43,11 +43,13 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       </head>
-      <body className={`${inter.variable} ${montserrat.variable} font-sans antialiased`}>
+      <body className={`${inter.variable} ${montserrat.variable} font-sans antialiased min-h-screen`}>
         {/* Floating background shapes */}
         <div className="floating-shapes">
           <div className="floating-shape"></div>
           <div className="floating-shape"></div>
+        </div>
+        <div className="pt-[72px]"> {/* Add padding for fixed header */}
           <div className="floating-shape"></div>
         </div>
         
