@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { createClientComponentClient } from '@/lib/db/supabase';
 import Link from 'next/link';
 import { ArrowLeft, Sparkles, Calendar, Star, Trash2, AlertTriangle } from 'lucide-react';
+import AIInsightDisplay from '@/components/features/dream-view/AIInsightDisplay';
 
 interface DreamDetailPageProps {
   params: Promise<{
@@ -204,26 +205,19 @@ export default function DreamDetailPage({ params }: DreamDetailPageProps) {
           </div>
 
           {/* AI Insight */}
-          <div className="dreamy-card p-8">
-            <div className="flex items-center gap-2 mb-6">
-              <div className="w-8 h-8 bg-gradient-to-r from-shimmering-gold to-soft-mint rounded-full flex items-center justify-center">
-                <Sparkles className="w-4 h-4 text-white" />
-              </div>
-              <h2 className="text-2xl font-semibold text-gray-800">AI Insight</h2>
-            </div>
-            
-            {dream.has_ai_insight && dream.ai_insights ? (
-              <div className="prose prose-lg max-w-none">
-                <div className="bg-gradient-to-r from-lavender-mist/20 to-misty-blue/20 p-6 rounded-lg border border-lavender-mist/30">
-                  <p className="text-gray-700 leading-relaxed">
-                    {dream.ai_insights.insight_text}
-                  </p>
-                  <div className="mt-4 text-sm text-gray-500">
-                    Generated on {new Date(dream.ai_insights.generated_at).toLocaleDateString()}
-                  </div>
+          {dream.has_ai_insight && dream.ai_insights ? (
+            <AIInsightDisplay
+              insightText={dream.ai_insights.insight_text}
+              generatedAt={dream.ai_insights.generated_at}
+            />
+          ) : (
+            <div className="dreamy-card p-8">
+              <div className="flex items-center gap-2 mb-6">
+                <div className="w-8 h-8 bg-gradient-to-r from-shimmering-gold to-soft-mint rounded-full flex items-center justify-center">
+                  <Sparkles className="w-4 h-4 text-white" />
                 </div>
+                <h2 className="text-2xl font-semibold text-gray-800">AI Insight</h2>
               </div>
-            ) : (
               <div className="text-center py-12">
                 <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
                   <Sparkles className="w-8 h-8 text-gray-400" />
@@ -264,8 +258,8 @@ export default function DreamDetailPage({ params }: DreamDetailPageProps) {
                   Generate AI Insight
                 </button>
               </div>
-            )}
-          </div>
+            </div>
+          )}
 
           {/* Actions */}
           <div className="flex justify-center gap-4">
