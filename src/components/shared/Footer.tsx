@@ -12,10 +12,19 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Brand Section */}
           <div className="col-span-1 md:col-span-2">
-            <Link href="/" className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-shimmering-gold to-yellow-500">
-              Track ur Dreams
+            <Link href="/" className="flex items-center gap-2 hover:scale-105 transition-transform">
+              <img 
+                src="/img/MainLogo.png" 
+                alt="Track ur Dreams Main Logo" 
+                className="h-16 w-auto"
+              />
+              <img 
+                src="/img/SecLogo2.png" 
+                alt="Track ur Dreams Secondary Logo" 
+                className="h-12 w-auto"
+              />
             </Link>
-            <p className="mt-2 text-gray-600 dark:text-gray-400">
+            <p className="mt-4 text-gray-600 dark:text-gray-400">
               Unlock the secrets of your subconscious mind through AI-powered dream analysis.
             </p>
           </div>
