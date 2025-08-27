@@ -112,6 +112,7 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
       id: userId,
       email: '', // Will be filled from auth
       subscriptionStatus: 'free',
+      product: 'free',
       insightCount: 0,
       maxInsights: FREE_INSIGHT_LIMIT,
     };
@@ -140,12 +141,7 @@ export async function getSubscriptionByUserId(userId: string): Promise<Subscript
 }
 
 export async function updateSubscriptionInsightCount(userId: string): Promise<void> {
-  const { error } = await supabase
-    .from('user_subscriptions')
-    .update({
-      insights_used_this_period: supabase.rpc('increment', { row_id: 'insights_used_this_period' }),
-    })
-    .eq('user_id', userId);
+  const { error } = await supabase.rpc('increment_insight_count', { user_uuid: userId });
 
   if (error) throw error;
 }
