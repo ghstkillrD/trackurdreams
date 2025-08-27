@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Inter, Montserrat } from 'next/font/google';
 import Header from '@/components/shared/Header';
+import Footer from '@/components/shared/Footer';
 import { SubscriptionProvider } from '@/providers/SubscriptionProvider';
 import '@/styles/globals.css';
 
@@ -43,21 +44,24 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       </head>
-      <body className={`${inter.variable} ${montserrat.variable} font-sans antialiased min-h-screen`}>
+      <body className={`${inter.variable} ${montserrat.variable} font-sans antialiased min-h-screen flex flex-col`}>
         {/* Floating background shapes */}
         <div className="floating-shapes">
           <div className="floating-shape"></div>
           <div className="floating-shape"></div>
         </div>
-        <div className="pt-[72px]"> {/* Add padding for fixed header */}
+        <div className="pt-[72px] flex-grow"> {/* Add padding for fixed header */}
           <div className="floating-shape"></div>
         </div>
         
         {/* Main content */}
-        <div className="min-h-screen bg-gradient-to-br from-lavender-mist via-misty-blue to-soft-pink">
+        <div className="flex flex-col min-h-screen bg-gradient-to-br from-lavender-mist via-misty-blue to-soft-pink">
           <SubscriptionProvider>
             <Header />
-            {children}
+            <main className="flex-grow">
+              {children}
+            </main>
+            <Footer />
           </SubscriptionProvider>
         </div>
       </body>
