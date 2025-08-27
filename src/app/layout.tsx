@@ -20,6 +20,32 @@ export const metadata: Metadata = {
   description: 'Record your dreams and gain AI-powered insights to understand your subconscious mind. Track patterns, emotions, and discover connections to your waking life.',
   keywords: ['dreams', 'dream tracking', 'AI insights', 'subconscious', 'self-improvement', 'mindfulness'],
   authors: [{ name: 'Track ur Dreams' }],
+  icons: {
+    icon: [
+      { url: '/img/favicon/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
+      { url: '/img/favicon/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
+      { url: '/img/favicon/favicon.ico' },
+    ],
+    apple: [
+      { url: '/img/favicon/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
+    ],
+    other: [
+      {
+        rel: 'manifest',
+        url: '/img/favicon/site.webmanifest',
+      },
+      {
+        rel: 'mask-icon',
+        url: '/img/favicon/android-chrome-192x192.png',
+        sizes: '192x192',
+      },
+      {
+        rel: 'mask-icon',
+        url: '/img/favicon/android-chrome-512x512.png',
+        sizes: '512x512',
+      },
+    ],
+  },
   openGraph: {
     title: 'Track ur Dreams',
     description: 'Unlock the Secrets of Your Subconscious',
